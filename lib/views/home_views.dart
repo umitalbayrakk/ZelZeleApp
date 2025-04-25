@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'package:earthquake_flutter_app/services/earthquake_services.dart';
+import 'package:earthquake_flutter_app/views/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/earthquake_model.dart';
@@ -12,36 +11,12 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final EarthquakeService _service = EarthquakeService();
-  late Timer _timer;
-  DateTime _selectedDate = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
-      setState(() {});
-    });
-  }
+  final HomeViewModel _viewModel = HomeViewModel();
 
   @override
   void dispose() {
-    _timer.cancel();
+    _viewModel.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 
   @override
@@ -49,13 +24,13 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
-        backgroundColor: Color(0xff0118D8),
+        backgroundColor: const Color(0xff0118D8),
         title: Column(
           children: [
-            Text("ZelZele", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 10),
+            const Text("ZelZele", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 10),
             Text(
-              'Tarih: ${DateFormat('dd.MM.yyyy').format(_selectedDate)}',
+              'Tarih: ${DateFormat('dd.MM.yyyy').format(_viewModel.selectedDate)}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ],
@@ -67,7 +42,7 @@ class _HomeViewState extends State<HomeView> {
               iconSize: 30,
               color: Colors.white,
               icon: const Icon(Icons.calendar_today),
-              onPressed: () => _selectDate(context),
+              onPressed: () => _viewModel.selectDate(context),
             ),
           ),
         ],
@@ -76,7 +51,7 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Expanded(
             child: FutureBuilder<List<EarthquakeModel>>(
-              future: _service.fetchEarthquakesForDay(date: _selectedDate),
+              future: _viewModel.fetchEarthquakes(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -100,10 +75,10 @@ class _HomeViewState extends State<HomeView> {
                           leading: CircleAvatar(
                             backgroundColor:
                                 quake.magnitude >= 4.0
-                                    ? Color(0xff8E1616)
+                                    ? const Color(0xff8E1616)
                                     : quake.magnitude >= 3.0
-                                    ? Color(0xffFF9B17)
-                                    : Color(0xff169976),
+                                    ? const Color(0xffFF9B17)
+                                    : const Color(0xff169976),
                             child: Text(
                               quake.magnitude.toStringAsFixed(1),
                               style: const TextStyle(color: Colors.white),
